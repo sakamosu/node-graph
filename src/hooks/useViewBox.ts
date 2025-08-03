@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { PositionedNode } from '@/types/graph'
 import { roundToFixed } from '@/utils/mathUtils'
+import { GRAPH_CONSTANTS } from '@/config/constants'
 
 interface UseViewBoxProps {
   nodes: PositionedNode[]
@@ -26,14 +27,14 @@ export function useViewBox({ nodes, nodeWidth, nodeHeight, width, height }: UseV
       const x = roundToFixed(node.x || 0)
       const y = roundToFixed(node.y || 0)
       const nodeRadius = Math.min(nodeWidth, nodeHeight) / 2
-      const labelSpace = 20
+      const labelSpace = GRAPH_CONSTANTS.node.labelSpacing
       minX = Math.min(minX, x - nodeRadius)
       minY = Math.min(minY, y - nodeRadius)
       maxX = Math.max(maxX, x + nodeRadius)
       maxY = Math.max(maxY, y + nodeRadius + labelSpace)
     })
 
-    const padding = 50
+    const padding = GRAPH_CONSTANTS.layout.canvasPadding
     const viewWidth = maxX - minX + padding * 2
     const viewHeight = maxY - minY + padding * 2
     const centerX = (minX + maxX) / 2

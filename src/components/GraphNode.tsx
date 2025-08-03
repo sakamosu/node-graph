@@ -2,6 +2,7 @@ import React from 'react'
 import { Node } from '@/types/graph'
 import { colors } from '@/utils/colors'
 import { roundToFixed } from '@/utils/mathUtils'
+import { GRAPH_CONSTANTS } from '@/config/constants'
 
 interface GraphNodeProps {
   node: Node
@@ -14,16 +15,16 @@ interface GraphNodeProps {
   onHover?: (nodeId: string | null) => void
 }
 
-export const GraphNode = React.memo<GraphNodeProps>(function GraphNode({ node, width = 80, height = 40, labelOffset = 0, isHighlighted = false, isHovered = false, isDimmed = false, onHover }) {
+export const GraphNode = React.memo<GraphNodeProps>(function GraphNode({ node, width = GRAPH_CONSTANTS.node.defaultWidth, height = GRAPH_CONSTANTS.node.defaultHeight, labelOffset = 0, isHighlighted = false, isHovered = false, isDimmed = false, onHover }) {
   // 座標を丸めてSSR/クライアント間の精度差を解決
   const x = roundToFixed(node.x || 0)
   const y = roundToFixed(node.y || 0)
-  const baseRadius = Math.min(width, height) / 2 * 0.7
+  const baseRadius = Math.min(width, height) / 2 * GRAPH_CONSTANTS.node.radiusRatio
   // ホバー中のノードのみサイズを大きくする
   const radius = isHovered ? baseRadius * 1.3 : baseRadius
   
   // ラベルの基本位置計算
-  const baseLabelY = radius + 16
+  const baseLabelY = radius + GRAPH_CONSTANTS.node.padding.vertical * 2
   // labelOffsetを使用して重複を回避
   const adjustedLabelY = baseLabelY + labelOffset
 
@@ -92,7 +93,7 @@ export const GraphNode = React.memo<GraphNodeProps>(function GraphNode({ node, w
         y={adjustedLabelY}
         textAnchor="middle"
         dominantBaseline="hanging"
-        fontSize={11}
+        fontSize={GRAPH_CONSTANTS.node.fontSize - 3}
         fill={getTextStyle()}
         fontFamily="Arial, sans-serif"
         textRendering="optimizeLegibility"

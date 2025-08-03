@@ -2,6 +2,7 @@ import React from 'react'
 import { Edge, Node } from '@/types/graph'
 import { colors } from '@/utils/colors'
 import { roundToFixed } from '@/utils/mathUtils'
+import { GRAPH_CONSTANTS } from '@/config/constants'
 
 interface GraphEdgeProps {
   edge: Edge
@@ -19,8 +20,8 @@ export const GraphEdge = React.memo<GraphEdgeProps>(function GraphEdge({
   edge,
   sourceNode,
   targetNode,
-  nodeWidth = 80,
-  nodeHeight = 40,
+  nodeWidth = GRAPH_CONSTANTS.node.defaultWidth,
+  nodeHeight = GRAPH_CONSTANTS.node.defaultHeight,
   curveOffset = 0,
   isHighlighted = false,
   isDimmed = false,
@@ -36,7 +37,7 @@ export const GraphEdge = React.memo<GraphEdgeProps>(function GraphEdge({
   const baseAngle = Math.atan2(dy, dx)
 
   // Calculate connection points on circle boundary
-  const baseRadius = Math.min(nodeWidth, nodeHeight) / 2 * 0.7
+  const baseRadius = Math.min(nodeWidth, nodeHeight) / 2 * GRAPH_CONSTANTS.node.radiusRatio
   const sourceRadius = baseRadius
   const targetRadius = baseRadius
   
@@ -46,7 +47,7 @@ export const GraphEdge = React.memo<GraphEdgeProps>(function GraphEdge({
   const endY = roundToFixed(targetY - targetRadius * Math.sin(baseAngle))
 
   // Arrow for direction - fixed size
-  const arrowSize = baseRadius * 0.5
+  const arrowSize = GRAPH_CONSTANTS.edge.arrowSize
   const arrowAngle = Math.PI / 6
   const arrowX1 = roundToFixed(endX - arrowSize * Math.cos(baseAngle - arrowAngle))
   const arrowY1 = roundToFixed(endY - arrowSize * Math.sin(baseAngle - arrowAngle))
@@ -95,9 +96,9 @@ export const GraphEdge = React.memo<GraphEdgeProps>(function GraphEdge({
 
   const getStrokeWidth = () => {
     if (isDimmed) {
-      return 0.5
+      return GRAPH_CONSTANTS.edge.strokeWidth * 0.5
     }
-    return 1
+    return GRAPH_CONSTANTS.EDGE.STROKE_WIDTH * 0.5
   }
 
   const edgeColor = getEdgeColor()

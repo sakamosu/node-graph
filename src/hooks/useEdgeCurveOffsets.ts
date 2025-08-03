@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { Edge, PositionedNode } from '@/types/graph'
+import { GRAPH_CONSTANTS } from '@/config/constants'
 
 interface UseEdgeCurveOffsetsProps {
   edges: Edge[]
@@ -27,12 +28,12 @@ const calculateEdgeOffset = (
   const targetLevel = targetNode.y || 0
   const levelDiff = Math.abs(targetLevel - sourceLevel)
   
-  if (levelDiff > 100) {
+  if (levelDiff > GRAPH_CONSTANTS.layout.hierarchical.levelHeight) {
     const pairKey = [edge.source, edge.target].sort().join('-')
     const existingCount = edgePairs.get(pairKey) || 0
     edgePairs.set(pairKey, existingCount + 1)
     
-    return 50 * (existingCount % 2 === 0 ? 1 : -1)
+    return GRAPH_CONSTANTS.edge.curveOffset * (existingCount % 2 === 0 ? 1 : -1)
   }
   
   return 0

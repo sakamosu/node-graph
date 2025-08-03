@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { PositionedNode } from '@/types/graph'
+import { GRAPH_CONSTANTS } from '@/config/constants'
 
 interface UseLabelOffsetsProps {
   nodes: PositionedNode[]
@@ -36,8 +37,8 @@ const calculateOffsetsForGroup = (nodesInGroup: Array<{ id: string, x: number }>
     const distance = Math.abs(next.x - current.x)
     
     // ノード間距離が小さい場合、ラベルオフセットを適用
-    if (distance < 80) {
-      const offsetAmount = 15
+    if (distance < GRAPH_CONSTANTS.node.defaultWidth) {
+      const offsetAmount = GRAPH_CONSTANTS.node.labelSpacing * 0.75
       offsets.set(current.id, i % 2 === 0 ? 0 : offsetAmount)
       offsets.set(next.id, (i + 1) % 2 === 0 ? 0 : offsetAmount)
     }

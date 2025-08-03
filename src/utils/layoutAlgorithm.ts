@@ -1,4 +1,5 @@
 import { Node, Edge, Graph } from '@/types/graph'
+import { GRAPH_CONSTANTS } from '@/config/constants'
 
 interface CollisionOptions {
   readonly nodeRadius?: number
@@ -183,7 +184,7 @@ const positionStarPattern = (
   
   // 周辺ノード数に基づいて半径を調整
   const nodeCount = peripheralNodes.length
-  const baseRadius = Math.max(horizontal * 1.2, nodeCount * 30)
+  const baseRadius = Math.max(horizontal * 1.2, nodeCount * GRAPH_CONSTANTS.layout.hierarchical.nodeSpacing * 0.6)
   
   return nodes.map(node => {
     if (node.id === centerNode) {
@@ -329,13 +330,13 @@ const positionNodesRadially = (
       nodeIds.forEach((nodeId, index) => {
         const node = nodes.find(n => n.id === nodeId)
         if (!node) return
-        const offset = nodeIds.length > 1 ? (index - (nodeIds.length - 1) / 2) * 40 : 0
+        const offset = nodeIds.length > 1 ? (index - (nodeIds.length - 1) / 2) * GRAPH_CONSTANTS.node.defaultHeight : 0
         positionedNodes.set(nodeId, { ...node, x: offset, y: 0 })
       })
     } else {
       // 周辺ノード - 十分な間隔を確保
       const nodesCount = nodeIds.length
-      const minRadius = Math.max(centerRadius + level * layerSpacing, nodesCount * 25)
+      const minRadius = Math.max(centerRadius + level * layerSpacing, nodesCount * (GRAPH_CONSTANTS.layout.hierarchical.nodeSpacing / 2))
       
       nodeIds.forEach((nodeId, index) => {
         const node = nodes.find(n => n.id === nodeId)
@@ -367,7 +368,7 @@ const calculateRepulsiveForce = (
   
   if (distance === 0) return createVector(0, 0)
   
-  const repulsion = strength * 1000 / (distance * distance)
+  const repulsion = strength * GRAPH_CONSTANTS.layout.forceDirected.repulsionForce / (distance * distance)
   return scaleVector(normalizeVector(delta), repulsion)
 }
 
@@ -381,7 +382,7 @@ const calculateAttractiveForce = (
   
   if (distance === 0) return createVector(0, 0)
   
-  const attraction = strength * distance * 0.01
+  const attraction = strength * distance * (GRAPH_CONSTANTS.layout.forceDirected.attractionForce / 10)
   return scaleVector(normalizeVector(delta), attraction)
 }
 
@@ -422,7 +423,7 @@ const applyForceDirectedIteration = (
     }
   })
   
-  const damping = 0.9
+  const damping = GRAPH_CONSTANTS.layout.forceDirected.damping
   return nodes.map(node => {
     const force = forces.get(node.id) || createVector(0, 0)
     const dampedForce = scaleVector(force, damping)
@@ -446,7 +447,7 @@ const applyForceDirectedLayout = (
       return node
     }
     const angle = (index / graph.nodes.length) * 2 * Math.PI
-    const radius = 200
+    const radius = GRAPH_CONSTANTS.layout.radial.radiusIncrement * 2
     return {
       ...node,
       x: Math.cos(angle) * radius,
@@ -472,7 +473,7 @@ const resolveNodeCollisions = (
   const adjustedNodes = [...nodes]
   let hasCollisions = true
   let iterations = 0
-  const maxIterations = 50
+  const maxIterations = GRAPH_CONSTANTS.layout.forceDirected.iterations / 2
   
   while (hasCollisions && iterations < maxIterations) {
     hasCollisions = false
@@ -567,8 +568,8 @@ const calculateLevelSpacing = (
   const { nodeWidth, horizontalSpacing, compactMode, maxWidth, minNodeSpacing } = options
   
   if (compactMode) {
-    const minSpacing = minNodeSpacing || 60
-    const maxLevelWidth = maxWidth || 1200
+    const minSpacing = minNodeSpacing || GRAPH_CONSTANTS.layout.hierarchical.nodeSpacing + 10
+    const maxLevelWidth = maxWidth || GRAPH_CONSTANTS.node.defaultWidth * 15
     const availableWidth = maxLevelWidth - (nodeWidth * nodesInLevel)
     const maxSpacing = nodesInLevel > 1 
       ? availableWidth / (nodesInLevel - 1) 
@@ -578,7 +579,7 @@ const calculateLevelSpacing = (
   
   const densityFactor = Math.max(1, nodesInLevel / 4)
   const dynamicSpacing = horizontalSpacing * Math.min(densityFactor * 1.5, 3)
-  const minSpacingForLevel = Math.max(horizontalSpacing, nodeWidth + 40)
+  const minSpacingForLevel = Math.max(horizontalSpacing, nodeWidth + GRAPH_CONSTANTS.node.defaultHeight)
   
   return Math.max(minSpacingForLevel, dynamicSpacing)
 }
@@ -806,16 +807,16 @@ const selectLayoutMode = (
 export function calculateNodePositions(
   graph: Readonly<Graph>,
   options: LayoutOptions = {
-    nodeWidth: 80,
-    nodeHeight: 40,
-    horizontalSpacing: 150,
-    verticalSpacing: 100,
+    nodeWidth: GRAPH_CONSTANTS.node.defaultWidth,
+    nodeHeight: GRAPH_CONSTANTS.node.defaultHeight,
+    horizontalSpacing: GRAPH_CONSTANTS.layout.hierarchical.nodeSpacing * 3,
+    verticalSpacing: GRAPH_CONSTANTS.layout.hierarchical.levelHeight,
     compactMode: false,
-    maxWidth: 1200,
-    minNodeSpacing: 60,
+    maxWidth: GRAPH_CONSTANTS.node.defaultWidth * 15,
+    minNodeSpacing: GRAPH_CONSTANTS.layout.hierarchical.nodeSpacing + 10,
     enableCollisionAvoidance: false,
     useForceDirected: false,
-    forceStrength: 0.1,
+    forceStrength: GRAPH_CONSTANTS.layout.forceDirected.attractionForce,
     layoutMode: 'auto',
   }
 ): Graph {
@@ -829,15 +830,15 @@ export function calculateNodePositions(
   switch (effectiveLayoutMode) {
     case 'radial':
       positionedNodes = positionNodesRadially(nodes, edges, {
-        centerRadius: options.radialOptions?.centerRadius || 100,
-        layerSpacing: options.radialOptions?.layerSpacing || 80
+        centerRadius: options.radialOptions?.centerRadius || GRAPH_CONSTANTS.layout.radial.radiusIncrement,
+        layerSpacing: options.radialOptions?.layerSpacing || GRAPH_CONSTANTS.layout.radial.radiusIncrement * 0.8
       })
       break
       
     case 'force': {
       const forceGraph = applyForceDirectedLayout(graph, {
-        forceStrength: options.forceStrength || 0.1,
-        iterations: Math.min(150, nodes.length * 4)
+        forceStrength: options.forceStrength || GRAPH_CONSTANTS.layout.forceDirected.attractionForce,
+        iterations: Math.min(GRAPH_CONSTANTS.layout.forceDirected.iterations * 1.5, nodes.length * 4)
       })
       positionedNodes = forceGraph.nodes
       break
@@ -850,8 +851,8 @@ export function calculateNodePositions(
         const forceGraph = applyForceDirectedLayout(
           { nodes: [...positionedNodes], edges },
           {
-            forceStrength: options.forceStrength || 0.1,
-            iterations: Math.min(100, nodes.length * 3)
+            forceStrength: options.forceStrength || GRAPH_CONSTANTS.layout.forceDirected.attractionForce,
+            iterations: Math.min(GRAPH_CONSTANTS.layout.forceDirected.iterations, nodes.length * 3)
           }
         )
         positionedNodes = forceGraph.nodes
@@ -863,7 +864,7 @@ export function calculateNodePositions(
   if (enableCollisionAvoidance || positionedNodes.length > 15) {
     positionedNodes = resolveNodeCollisions(positionedNodes, {
       minimumDistance: options.collisionOptions?.minimumDistance || 
-        Math.max(nodeWidth, nodeHeight) + 20,
+        Math.max(nodeWidth, nodeHeight) + GRAPH_CONSTANTS.node.labelSpacing,
       pushForce: 0.3
     })
   }
