@@ -5,6 +5,7 @@ import { Graph } from '@/types/graph'
 import { GraphNode } from './GraphNode'
 import { GraphEdge } from './GraphEdge'
 import { calculateNodePositions } from '@/utils/layoutAlgorithm'
+import { colors } from '@/utils/colors'
 
 interface NodeGraphProps {
   graph: Graph
@@ -182,9 +183,9 @@ export function NodeGraph({ graph, width = 800, height = 600, compact = false, n
       height={height}
       viewBox={viewBox}
       style={{
-        border: '1px solid #e0e0e0',
+        border: `1px solid ${colors.ui.panel.border}`,
         borderRadius: '8px',
-        backgroundColor: '#f9f9f9',
+        backgroundColor: colors.ui.panel.background,
       }}
     >
       <g>

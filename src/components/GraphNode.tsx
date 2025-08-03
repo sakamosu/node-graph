@@ -1,5 +1,6 @@
 import React from 'react'
 import { Node } from '@/types/graph'
+import { colors } from '@/utils/colors'
 
 interface GraphNodeProps {
   node: Node
@@ -28,27 +29,27 @@ export function GraphNode({ node, width = 80, height = 40, labelOffset = 0, isHi
   const getNodeStyle = () => {
     if (isHovered) {
       return {
-        fill: "#87CEFA",
+        fill: colors.node.background.highlighted,
         stroke: "none",
         strokeWidth: 0,
       }
     }
     if (isHighlighted) {
       return {
-        fill: "#87CEFA",
+        fill: colors.node.background.highlighted,
         stroke: "none",
         strokeWidth: 0,
       }
     }
     if (isDimmed) {
       return {
-        fill: "#d0d0d0",
+        fill: colors.node.background.dimmed,
         stroke: "none",
         strokeWidth: 0,
       }
     }
     return {
-      fill: "#808080",
+      fill: colors.node.background.dimmedCompact,
       stroke: "none",
       strokeWidth: 0,
     }
@@ -56,12 +57,12 @@ export function GraphNode({ node, width = 80, height = 40, labelOffset = 0, isHi
 
   const getTextStyle = () => {
     if (isHovered || isHighlighted) {
-      return "#006064"
+      return colors.node.stroke.highlighted
     }
     if (isDimmed) {
-      return "#999999"
+      return colors.node.stroke.dimmed
     }
-    return "#333333"
+    return colors.node.stroke.normal
   }
 
   const nodeStyle = getNodeStyle()

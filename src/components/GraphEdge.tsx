@@ -1,5 +1,6 @@
 import React from 'react'
 import { Edge, Node } from '@/types/graph'
+import { colors } from '@/utils/colors'
 
 interface GraphEdgeProps {
   edge: Edge
@@ -83,18 +84,15 @@ export function GraphEdge({
   // スタイルの決定
   const getEdgeColor = () => {
     if (isHighlighted) {
-      return "#87CEFA"
+      return colors.edge.stroke.highlighted
     }
     if (isDimmed) {
-      return "#e0e0e0"
+      return colors.edge.stroke.dimmed
     }
-    return "#CCCCCC"
+    return colors.edge.stroke.normal
   }
 
   const getStrokeWidth = () => {
-    if (isHighlighted) {
-      return 2
-    }
     if (isDimmed) {
       return 0.5
     }
@@ -112,7 +110,7 @@ export function GraphEdge({
         d={path}
         fill="none"
         stroke="transparent"
-        strokeWidth="20"
+        strokeWidth={strokeWidth}
         style={{ cursor: 'pointer' }}
       />
       
@@ -137,11 +135,11 @@ export function GraphEdge({
           {[0, 1, 2, 3].map((index) => (
             <circle
               key={index}
-              r="3"
-              fill="#87CEFA"
+              r="2"
+              fill={colors.edge.arrow}
               opacity="0"
               style={{
-                filter: 'drop-shadow(0 0 4px rgba(135, 206, 250, 0.9))'
+                filter: `drop-shadow(0 0 4px ${colors.edge.dropShadow})`
               }}
             >
               <animateMotion
@@ -172,8 +170,6 @@ export function GraphEdge({
           transformOrigin: `${endX}px ${endY}px`,
           cursor: 'pointer',
         }}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
       />
     </g>
   )
