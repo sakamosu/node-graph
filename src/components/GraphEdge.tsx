@@ -10,11 +10,11 @@ interface GraphEdgeProps {
   curveOffset?: number
   isHighlighted?: boolean
   isDimmed?: boolean
-  sourceNodeHovered?: boolean
-  targetNodeHovered?: boolean
+  showAnimation?: boolean
 }
 
 export function GraphEdge({
+  edge,
   sourceNode,
   targetNode,
   nodeWidth = 80,
@@ -22,8 +22,7 @@ export function GraphEdge({
   curveOffset = 0,
   isHighlighted = false,
   isDimmed = false,
-  sourceNodeHovered = false,
-  targetNodeHovered = false,
+  showAnimation = false,
 }: GraphEdgeProps) {
   const sourceX = sourceNode.x || 0
   const sourceY = sourceNode.y || 0
@@ -36,16 +35,16 @@ export function GraphEdge({
 
   // Calculate connection points on circle boundary
   const baseRadius = Math.min(nodeWidth, nodeHeight) / 2 * 0.7
-  const sourceRadius = sourceNodeHovered ? baseRadius * 1.3 : baseRadius
-  const targetRadius = targetNodeHovered ? baseRadius * 1.3 : baseRadius
+  const sourceRadius = baseRadius
+  const targetRadius = baseRadius
   
   const startX = sourceX + sourceRadius * Math.cos(baseAngle)
   const startY = sourceY + sourceRadius * Math.sin(baseAngle)
   const endX = targetX - targetRadius * Math.cos(baseAngle)
   const endY = targetY - targetRadius * Math.sin(baseAngle)
 
-  // Arrow for direction - scale with target node size
-  const arrowSize = targetRadius * 0.5
+  // Arrow for direction - fixed size
+  const arrowSize = baseRadius * 0.5
   const arrowAngle = Math.PI / 6
   const arrowX1 = endX - arrowSize * Math.cos(baseAngle - arrowAngle)
   const arrowY1 = endY - arrowSize * Math.sin(baseAngle - arrowAngle)
@@ -107,6 +106,17 @@ export function GraphEdge({
 
   return (
     <g>
+
+      {/* ホバー用の透明な太いパス */}
+      <path
+        d={path}
+        fill="none"
+        stroke="transparent"
+        strokeWidth="20"
+        style={{ cursor: 'pointer' }}
+      />
+      
+      {/* メインのエッジパス */}
       <path
         d={path}
         fill="none"
@@ -114,15 +124,56 @@ export function GraphEdge({
         strokeWidth={strokeWidth}
         style={{
           transition: 'stroke 0.5s ease-out, stroke-width 0.5s ease-out, d 0.5s ease-out',
+          pointerEvents: 'none',
         }}
       />
+
+      {/* ノードホバー時のドット流れアニメーション */}
+      {showAnimation && (
+        <g>
+          <defs>
+            <path id={`motion-path-${edge.source}-${edge.target}`} d={path} />
+          </defs>
+          {[0, 1, 2, 3].map((index) => (
+            <circle
+              key={index}
+              r="3"
+              fill="#87CEFA"
+              opacity="0"
+              style={{
+                filter: 'drop-shadow(0 0 4px rgba(135, 206, 250, 0.9))'
+              }}
+            >
+              <animateMotion
+                dur="2.5s"
+                repeatCount="indefinite"
+                begin={`${index * 0.625}s`}
+              >
+                <mpath href={`#motion-path-${edge.source}-${edge.target}`} />
+              </animateMotion>
+              <animate
+                attributeName="opacity"
+                values="0;1;1;0"
+                dur="2.5s"
+                repeatCount="indefinite"
+                begin={`${index * 0.625}s`}
+              />
+            </circle>
+          ))}
+        </g>
+      )}
+
+      {/* 矢印 */}
       <polygon
         points={`${endX},${endY} ${arrowX1},${arrowY1} ${arrowX2},${arrowY2}`}
         fill={edgeColor}
         style={{
           transition: 'fill 0.5s ease-out',
           transformOrigin: `${endX}px ${endY}px`,
+          cursor: 'pointer',
         }}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       />
     </g>
   )

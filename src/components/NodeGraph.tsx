@@ -205,8 +205,7 @@ export function NodeGraph({ graph, width = 800, height = 600, compact = false, n
               curveOffset={edgeCurveOffsets.get(edge.id) || 0}
               isHighlighted={highlightTargets.edges.has(edge.id)}
               isDimmed={hoveredNodeId !== null && !highlightTargets.edges.has(edge.id)}
-              sourceNodeHovered={hoveredNodeId === edge.source}
-              targetNodeHovered={hoveredNodeId === edge.target}
+              showAnimation={highlightTargets.edges.has(edge.id)}
             />
           )
         })}
