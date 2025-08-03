@@ -6,9 +6,11 @@ interface GraphNodeProps {
   width?: number
   height?: number
   labelOffset?: number
+  isHighlighted?: boolean
+  onHover?: (nodeId: string | null) => void
 }
 
-export function GraphNode({ node, width = 80, height = 40, labelOffset = 0 }: GraphNodeProps) {
+export function GraphNode({ node, width = 80, height = 40, labelOffset = 0, isHighlighted = false, onHover }: GraphNodeProps) {
   const x = node.x || 0
   const y = node.y || 0
   const radius = Math.min(width, height) / 2 * 0.7
@@ -19,14 +21,19 @@ export function GraphNode({ node, width = 80, height = 40, labelOffset = 0 }: Gr
   const adjustedLabelY = baseLabelY + labelOffset
 
   return (
-    <g transform={`translate(${x}, ${y})`}>
+    <g 
+      transform={`translate(${x}, ${y})`}
+      style={{ cursor: 'pointer' }}
+      onMouseEnter={() => onHover?.(node.id)}
+      onMouseLeave={() => onHover?.(null)}
+    >
       <circle
         cx={0}
         cy={0}
         r={radius}
-        fill="#808080"
-        stroke="none"
-        strokeWidth={0}
+        fill={isHighlighted ? "#00bcd4" : "#808080"}
+        stroke={isHighlighted ? "#0097a7" : "none"}
+        strokeWidth={isHighlighted ? 2 : 0}
       />
       <text
         x={0}
@@ -34,7 +41,7 @@ export function GraphNode({ node, width = 80, height = 40, labelOffset = 0 }: Gr
         textAnchor="middle"
         dominantBaseline="hanging"
         fontSize={11}
-        fill="#333333"
+        fill={isHighlighted ? "#006064" : "#333333"}
         fontFamily="Arial, sans-serif"
         textRendering="optimizeLegibility"
         style={{ userSelect: 'none', pointerEvents: 'none' }}

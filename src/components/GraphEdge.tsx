@@ -8,15 +8,16 @@ interface GraphEdgeProps {
   nodeWidth?: number
   nodeHeight?: number
   curveOffset?: number
+  isHighlighted?: boolean
 }
 
 export function GraphEdge({
-  edge,
   sourceNode,
   targetNode,
   nodeWidth = 80,
   nodeHeight = 40,
   curveOffset = 0,
+  isHighlighted = false,
 }: GraphEdgeProps) {
   const sourceX = sourceNode.x || 0
   const sourceY = sourceNode.y || 0
@@ -77,12 +78,12 @@ export function GraphEdge({
       <path
         d={path}
         fill="none"
-        stroke="#CCCCCC"
-        strokeWidth={1}
+        stroke={isHighlighted ? "#00bcd4" : "#CCCCCC"}
+        strokeWidth={isHighlighted ? 2 : 1}
       />
       <polygon
         points={`${endX},${endY} ${arrowX1},${arrowY1} ${arrowX2},${arrowY2}`}
-        fill="#CCCCCC"
+        fill={isHighlighted ? "#00bcd4" : "#CCCCCC"}
       />
     </g>
   )

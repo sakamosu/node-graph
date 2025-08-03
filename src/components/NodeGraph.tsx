@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useMemo } from 'react'
+import React, { useMemo, useState, useCallback } from 'react'
 import { Graph } from '@/types/graph'
 import { GraphNode } from './GraphNode'
 import { GraphEdge } from './GraphEdge'
@@ -17,6 +17,8 @@ interface NodeGraphProps {
 }
 
 export function NodeGraph({ graph, width = 800, height = 600, compact = false, nodeWidth = 80, nodeHeight = 40, layoutMode = 'auto' }: NodeGraphProps) {
+  const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null)
+
   const positionedGraph = useMemo(() => {
     return calculateNodePositions(graph, {
       nodeWidth,
@@ -59,7 +61,7 @@ export function NodeGraph({ graph, width = 800, height = 600, compact = false, n
     const centerY = (minY + maxY) / 2
 
     return `${centerX - viewWidth / 2} ${centerY - viewHeight / 2} ${viewWidth} ${viewHeight}`
-  }, [positionedGraph.nodes, nodeWidth, nodeHeight])
+  }, [positionedGraph.nodes, nodeWidth, nodeHeight, width, height])
 
   const nodeMap = useMemo(() => {
     const map = new Map()
@@ -84,7 +86,7 @@ export function NodeGraph({ graph, width = 800, height = 600, compact = false, n
       // Original curve logic for non-triangular graphs
       const edgePairs = new Map<string, number>()
       
-      positionedGraph.edges.forEach((edge, index) => {
+      positionedGraph.edges.forEach((edge) => {
         const sourceNode = nodeMap.get(edge.source)
         const targetNode = nodeMap.get(edge.target)
         
@@ -108,6 +110,31 @@ export function NodeGraph({ graph, width = 800, height = 600, compact = false, n
     
     return offsets
   }, [positionedGraph.edges, positionedGraph.nodes, nodeMap])
+
+  // ホバー時のハイライト対象を計算
+  const highlightTargets = useMemo(() => {
+    if (!hoveredNodeId) return { nodes: new Set<string>(), edges: new Set<string>() }
+
+    const highlightedNodes = new Set<string>([hoveredNodeId])
+    const highlightedEdges = new Set<string>()
+
+    positionedGraph.edges.forEach(edge => {
+      if (edge.source === hoveredNodeId) {
+        highlightedNodes.add(edge.target)
+        highlightedEdges.add(edge.id)
+      }
+      if (edge.target === hoveredNodeId) {
+        highlightedNodes.add(edge.source)
+        highlightedEdges.add(edge.id)
+      }
+    })
+
+    return { nodes: highlightedNodes, edges: highlightedEdges }
+  }, [hoveredNodeId, positionedGraph.edges])
+
+  const handleNodeHover = useCallback((nodeId: string | null) => {
+    setHoveredNodeId(nodeId)
+  }, [])
 
   const labelOffsets = useMemo(() => {
     const offsets = new Map<string, number>()
@@ -176,6 +203,7 @@ export function NodeGraph({ graph, width = 800, height = 600, compact = false, n
               nodeWidth={nodeWidth}
               nodeHeight={nodeHeight}
               curveOffset={edgeCurveOffsets.get(edge.id) || 0}
+              isHighlighted={highlightTargets.edges.has(edge.id)}
             />
           )
         })}
@@ -188,6 +216,8 @@ export function NodeGraph({ graph, width = 800, height = 600, compact = false, n
             width={nodeWidth} 
             height={nodeHeight}
             labelOffset={labelOffsets.get(node.id) || 0}
+            isHighlighted={highlightTargets.nodes.has(node.id)}
+            onHover={handleNodeHover}
           />
         ))}
       </g>
