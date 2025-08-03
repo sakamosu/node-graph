@@ -98,7 +98,7 @@ export const GraphEdge = React.memo<GraphEdgeProps>(function GraphEdge({
     if (isDimmed) {
       return GRAPH_CONSTANTS.edge.strokeWidth * 0.5
     }
-    return GRAPH_CONSTANTS.EDGE.STROKE_WIDTH * 0.5
+    return GRAPH_CONSTANTS.edge.strokeWidth * 0.5
   }
 
   const edgeColor = getEdgeColor()
