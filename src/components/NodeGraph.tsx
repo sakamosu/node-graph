@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useMemo } from 'react'
-import { Graph } from '@/types/graph'
+import { Graph, GraphInteractionHandlers } from '@/types/graph'
 import { GraphNodeList } from './GraphNodeList'
 import { GraphEdgeList } from './GraphEdgeList'
 import { calculateNodePositions } from '@/utils/layoutAlgorithm'
@@ -11,6 +11,8 @@ import { useEdgeCurveOffsets } from '@/hooks/useEdgeCurveOffsets'
 import { useLabelOffsets } from '@/hooks/useLabelOffsets'
 import { useGraphHighlight } from '@/hooks/useGraphHighlight'
 import { useNodeMap } from '@/hooks/useNodeMap'
+import { useZoomPan } from '@/hooks/useZoomPan'
+import { ZoomControls } from './ZoomControls'
 
 interface NodeGraphProps {
   graph: Graph
@@ -20,9 +22,10 @@ interface NodeGraphProps {
   nodeWidth?: number
   nodeHeight?: number
   layoutMode?: 'hierarchical' | 'radial' | 'force' | 'auto'
+  handlers?: GraphInteractionHandlers
 }
 
-export function NodeGraph({ graph, width = 800, height = 600, compact = false, nodeWidth = 80, nodeHeight = 40, layoutMode = 'auto' }: NodeGraphProps) {
+export function NodeGraph({ graph, width = 800, height = 600, compact = false, nodeWidth = 80, nodeHeight = 40, layoutMode = 'auto', handlers }: NodeGraphProps) {
   const positionedGraph = useMemo(() => {
     return calculateNodePositions(graph, {
       nodeWidth,
@@ -55,10 +58,16 @@ export function NodeGraph({ graph, width = 800, height = 600, compact = false, n
   const { hoveredNodeId, highlightTargets, handleNodeHover } = useGraphHighlight({ 
     edges: positionedGraph.edges 
   })
+  const zoomPan = useZoomPan({
+    onZoom: handlers?.onZoom,
+    onPan: handlers?.onPan
+  })
 
 
   return (
-    <svg
+    <div style={{ position: 'relative', width, height }}>
+      <svg
+      ref={zoomPan.svgRef}
       width={width}
       height={height}
       viewBox={viewBox}
@@ -66,26 +75,41 @@ export function NodeGraph({ graph, width = 800, height = 600, compact = false, n
         border: `1px solid ${colors.ui.panel.border}`,
         borderRadius: '8px',
         backgroundColor: colors.ui.panel.background,
+        cursor: zoomPan.isPanning ? 'grabbing' : 'grab',
       }}
+      onMouseDown={zoomPan.handleMouseDown}
+      onMouseMove={zoomPan.handleMouseMove}
+      onMouseUp={zoomPan.handleMouseUp}
+      onMouseLeave={zoomPan.handleMouseUp}
     >
-      <GraphEdgeList
-        edges={positionedGraph.edges}
-        nodeMap={nodeMap}
-        nodeWidth={nodeWidth}
-        nodeHeight={nodeHeight}
-        edgeCurveOffsets={edgeCurveOffsets}
-        highlightedEdges={highlightTargets.edges}
-        hoveredNodeId={hoveredNodeId}
-      />
-      <GraphNodeList
-        nodes={positionedGraph.nodes}
-        nodeWidth={nodeWidth}
-        nodeHeight={nodeHeight}
-        labelOffsets={labelOffsets}
-        highlightedNodes={highlightTargets.nodes}
-        hoveredNodeId={hoveredNodeId}
-        onNodeHover={handleNodeHover}
-      />
+      <g transform={zoomPan.getTransform()}>
+        <GraphEdgeList
+          edges={positionedGraph.edges}
+          nodeMap={nodeMap}
+          nodeWidth={nodeWidth}
+          nodeHeight={nodeHeight}
+          edgeCurveOffsets={edgeCurveOffsets}
+          highlightedEdges={highlightTargets.edges}
+          hoveredNodeId={hoveredNodeId}
+        />
+        <GraphNodeList
+          nodes={positionedGraph.nodes}
+          nodeWidth={nodeWidth}
+          nodeHeight={nodeHeight}
+          labelOffsets={labelOffsets}
+          highlightedNodes={highlightTargets.nodes}
+          hoveredNodeId={hoveredNodeId}
+          onNodeHover={handleNodeHover}
+          onNodeClick={handlers?.onNodeClick}
+        />
+      </g>
     </svg>
+      <ZoomControls
+        onZoomIn={zoomPan.zoomIn}
+        onZoomOut={zoomPan.zoomOut}
+        onResetZoom={zoomPan.resetZoom}
+        scale={zoomPan.scale}
+      />
+    </div>
   )
 }

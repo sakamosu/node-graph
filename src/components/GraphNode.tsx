@@ -13,9 +13,10 @@ interface GraphNodeProps {
   isHovered?: boolean
   isDimmed?: boolean
   onHover?: (nodeId: string | null) => void
+  onClick?: (node: Node) => void
 }
 
-export const GraphNode = React.memo<GraphNodeProps>(function GraphNode({ node, width = GRAPH_CONSTANTS.node.defaultWidth, height = GRAPH_CONSTANTS.node.defaultHeight, labelOffset = 0, isHighlighted = false, isHovered = false, isDimmed = false, onHover }) {
+export const GraphNode = React.memo<GraphNodeProps>(function GraphNode({ node, width = GRAPH_CONSTANTS.node.defaultWidth, height = GRAPH_CONSTANTS.node.defaultHeight, labelOffset = 0, isHighlighted = false, isHovered = false, isDimmed = false, onHover, onClick }) {
   // 座標を丸めてSSR/クライアント間の精度差を解決
   const x = roundToFixed(node.x || 0)
   const y = roundToFixed(node.y || 0)
@@ -76,6 +77,10 @@ export const GraphNode = React.memo<GraphNodeProps>(function GraphNode({ node, w
       style={{ cursor: 'pointer' }}
       onMouseEnter={() => onHover?.(node.id)}
       onMouseLeave={() => onHover?.(null)}
+      onClick={(e) => {
+        e.stopPropagation()
+        onClick?.(node)
+      }}
     >
       <circle
         cx={0}

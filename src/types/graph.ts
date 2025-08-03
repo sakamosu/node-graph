@@ -121,3 +121,11 @@ export interface PositionedNode extends Node {
   x: number
   y: number
 }
+
+// グラフのインタラクションハンドラー
+export interface GraphInteractionHandlers {
+  onNodeClick?: (node: Node) => void
+  onNodeDrag?: (node: Node, position: Position) => void
+  onZoom?: (scale: number) => void
+  onPan?: (offset: Position) => void
+}
