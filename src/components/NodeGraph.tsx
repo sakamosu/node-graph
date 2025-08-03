@@ -10,12 +10,22 @@ interface NodeGraphProps {
   graph: Graph
   width?: number
   height?: number
+  compact?: boolean
 }
 
-export function NodeGraph({ graph, width = 800, height = 600 }: NodeGraphProps) {
+export function NodeGraph({ graph, width = 800, height = 600, compact = false }: NodeGraphProps) {
   const positionedGraph = useMemo(() => {
-    return calculateNodePositions(graph)
-  }, [graph])
+    return calculateNodePositions(graph, {
+      nodeWidth: 80,
+      nodeHeight: 40,
+      horizontalSpacing: compact ? 100 : 150,
+      verticalSpacing: compact ? 80 : 100,
+      compactMode: compact,
+      maxWidth: width * 1.5,
+      minNodeSpacing: compact ? 50 : 60,
+      enableCollisionAvoidance: false, // Temporarily disabled
+    })
+  }, [graph, compact, width])
 
   const viewBox = useMemo(() => {
     if (positionedGraph.nodes.length === 0) {

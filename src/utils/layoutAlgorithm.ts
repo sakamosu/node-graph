@@ -1,10 +1,21 @@
 import { Node, Edge, Graph } from '@/types/graph'
 
+interface CollisionOptions {
+  nodeRadius?: number
+  minimumDistance?: number
+  edgeAvoidanceMargin?: number
+}
+
 interface LayoutOptions {
   nodeWidth: number
   nodeHeight: number
   horizontalSpacing: number
   verticalSpacing: number
+  compactMode?: boolean
+  maxWidth?: number
+  minNodeSpacing?: number
+  enableCollisionAvoidance?: boolean
+  collisionOptions?: CollisionOptions
 }
 
 interface NodeInfo {
@@ -81,10 +92,14 @@ export function calculateNodePositions(
     nodeHeight: 40,
     horizontalSpacing: 150,
     verticalSpacing: 100,
+    compactMode: false,
+    maxWidth: 1200,
+    minNodeSpacing: 60,
+    enableCollisionAvoidance: false,
   }
 ): Graph {
   const { nodes, edges } = graph
-  const { nodeWidth, nodeHeight, horizontalSpacing, verticalSpacing } = options
+  const { nodeWidth, nodeHeight, horizontalSpacing, verticalSpacing, compactMode, maxWidth, minNodeSpacing } = options
   
   // Check for triangular pattern
   const triangularPattern = detectTriangularPattern(graph)
@@ -220,10 +235,21 @@ export function calculateNodePositions(
     const nodesInLevel = nodesPerLevel.get(level) || []
     const levelNodeInfos = nodesInLevel.map(id => nodeInfoMap.get(id)!).filter(Boolean)
     
-    const totalSubtreeWidth = levelNodeInfos.reduce((sum, info) => sum + info.subtreeWidth, 0)
-    const dynamicSpacing = Math.max(horizontalSpacing, horizontalSpacing * (totalSubtreeWidth / nodesInLevel.length))
+    let spacing: number
+    if (compactMode) {
+      // Compact mode: prioritize density over spreading
+      const minSpacing = minNodeSpacing || 60
+      const maxLevelWidth = maxWidth || 1200
+      const availableWidth = maxLevelWidth - (nodeWidth * nodesInLevel.length)
+      const maxSpacing = nodesInLevel.length > 1 ? availableWidth / (nodesInLevel.length - 1) : minSpacing
+      spacing = Math.max(minSpacing, Math.min(horizontalSpacing * 0.7, maxSpacing))
+    } else {
+      // Original dynamic spacing logic
+      const totalSubtreeWidth = levelNodeInfos.reduce((sum, info) => sum + info.subtreeWidth, 0)
+      spacing = Math.max(horizontalSpacing, horizontalSpacing * (totalSubtreeWidth / nodesInLevel.length))
+    }
     
-    let currentX = -(nodesInLevel.length - 1) * dynamicSpacing / 2
+    let currentX = -(nodesInLevel.length - 1) * spacing / 2
     
     nodesInLevel.forEach((nodeId, index) => {
       const nodeInfo = nodeInfoMap.get(nodeId)
@@ -243,8 +269,9 @@ export function calculateNodePositions(
         if (parentCount > 0) {
           const targetX = parentXSum / parentCount
           const offset = targetX - currentX
-          if (Math.abs(offset) < dynamicSpacing / 2) {
-            currentX += offset * 0.5
+          const maxOffset = spacing / 2
+          if (Math.abs(offset) < maxOffset) {
+            currentX += offset * (compactMode ? 0.3 : 0.5)
           }
         }
       }
@@ -254,7 +281,7 @@ export function calculateNodePositions(
         y: level * verticalSpacing + nodeHeight / 2,
       })
       
-      currentX += dynamicSpacing
+      currentX += spacing
     })
   }
 
@@ -267,8 +294,15 @@ export function calculateNodePositions(
     }
   })
 
-  return {
+  let finalGraph = {
     nodes: positionedNodes,
     edges: edges,
   }
+
+  // Collision avoidance temporarily disabled - files not found
+  // if (options.enableCollisionAvoidance) {
+  //   // Implementation will be added later
+  // }
+
+  return finalGraph
 }
