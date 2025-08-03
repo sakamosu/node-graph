@@ -14,32 +14,6 @@
 
 ## 1. 構造的な改善点
 
-### 型定義の拡充
-
-現状の問題点：
-- `types/graph.ts`の型定義が基本的すぎる
-- ノードのメタデータ（色、サイズ、スタイル）が型定義に含まれていない
-- エッジの曲線タイプや矢印スタイルなどのオプションが定義されていない
-
-改善案：
-```typescript
-// 拡張された型定義の例
-interface NodeStyle {
-  color?: string
-  backgroundColor?: string
-  borderColor?: string
-  borderWidth?: number
-  shape?: 'circle' | 'rectangle' | 'diamond'
-}
-
-interface EdgeStyle {
-  strokeColor?: string
-  strokeWidth?: number
-  curveType?: 'bezier' | 'straight' | 'step'
-  arrowStyle?: 'default' | 'filled' | 'none'
-}
-```
-
 ### 状態管理の分散
 
 現状の問題点：
@@ -52,44 +26,7 @@ interface EdgeStyle {
 - グラフ選択とレイアウトモードのグローバル状態管理
 - 設定パネルコンポーネントの追加
 
-### コンポーネントの責務分離
-
-現状の問題点：
-- `NodeGraph.tsx`が複雑すぎる（231行）
-- viewBox計算、ラベルオフセット計算、エッジ曲線計算などが一つのコンポーネントに集中
-
-改善案：
-- 機能ごとにコンポーネントを分割
-- 計算ロジックをカスタムフックに移動
-- 純粋な表示コンポーネントとロジックコンポーネントの分離
-
 ## 2. パフォーマンスの改善点
-
-### 不要な再計算
-
-現状の問題点：
-```typescript
-const labelOffsets = useMemo(() => {
-  // 毎回すべてのノードでグループ化処理を実行
-  // ノード数が多い場合、計算コストが高い
-}, [positionedGraph.nodes])
-```
-
-改善案：
-- 変更されたノードのみを再計算
-- 計算結果のキャッシング
-- Web Workerでの並列処理
-
-### メモ化の最適化
-
-現状の問題点：
-- `edgeCurveOffsets`の計算が複雑で、依存配列が多い
-- 小さな変更でも全体が再計算される
-
-改善案：
-- より細かい粒度でのメモ化
-- 計算の段階的な分割
-- React.memoの活用
 
 ## 3. 保守性の改善点
 

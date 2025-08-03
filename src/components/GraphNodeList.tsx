@@ -12,7 +12,7 @@ interface GraphNodeListProps {
   onNodeHover: (nodeId: string | null) => void
 }
 
-export function GraphNodeList({
+export const GraphNodeList = React.memo<GraphNodeListProps>(function GraphNodeList({
   nodes,
   nodeWidth,
   nodeHeight,
@@ -20,7 +20,7 @@ export function GraphNodeList({
   highlightedNodes,
   hoveredNodeId,
   onNodeHover
-}: GraphNodeListProps) {
+}) {
   return (
     <g>
       {nodes.map(node => (
@@ -38,4 +38,4 @@ export function GraphNodeList({
       ))}
     </g>
   )
-}
+})

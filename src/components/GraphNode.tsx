@@ -1,6 +1,7 @@
 import React from 'react'
 import { Node } from '@/types/graph'
 import { colors } from '@/utils/colors'
+import { roundToFixed } from '@/utils/mathUtils'
 
 interface GraphNodeProps {
   node: Node
@@ -13,9 +14,10 @@ interface GraphNodeProps {
   onHover?: (nodeId: string | null) => void
 }
 
-export function GraphNode({ node, width = 80, height = 40, labelOffset = 0, isHighlighted = false, isHovered = false, isDimmed = false, onHover }: GraphNodeProps) {
-  const x = node.x || 0
-  const y = node.y || 0
+export const GraphNode = React.memo<GraphNodeProps>(function GraphNode({ node, width = 80, height = 40, labelOffset = 0, isHighlighted = false, isHovered = false, isDimmed = false, onHover }) {
+  // 座標を丸めてSSR/クライアント間の精度差を解決
+  const x = roundToFixed(node.x || 0)
+  const y = roundToFixed(node.y || 0)
   const baseRadius = Math.min(width, height) / 2 * 0.7
   // ホバー中のノードのみサイズを大きくする
   const radius = isHovered ? baseRadius * 1.3 : baseRadius
@@ -104,4 +106,4 @@ export function GraphNode({ node, width = 80, height = 40, labelOffset = 0, isHi
       </text>
     </g>
   )
-}
+})

@@ -12,7 +12,7 @@ interface GraphEdgeListProps {
   hoveredNodeId: string | null
 }
 
-export function GraphEdgeList({
+export const GraphEdgeList = React.memo<GraphEdgeListProps>(function GraphEdgeList({
   edges,
   nodeMap,
   nodeWidth,
@@ -20,7 +20,7 @@ export function GraphEdgeList({
   edgeCurveOffsets,
   highlightedEdges,
   hoveredNodeId
-}: GraphEdgeListProps) {
+}) {
   return (
     <g>
       {edges.map(edge => {
@@ -46,4 +46,4 @@ export function GraphEdgeList({
       })}
     </g>
   )
-}
+})

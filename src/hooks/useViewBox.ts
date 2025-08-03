@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { PositionedNode } from '@/types/graph'
+import { roundToFixed } from '@/utils/mathUtils'
 
 interface UseViewBoxProps {
   nodes: PositionedNode[]
@@ -21,8 +22,9 @@ export function useViewBox({ nodes, nodeWidth, nodeHeight, width, height }: UseV
     let maxY = -Infinity
 
     nodes.forEach(node => {
-      const x = node.x || 0
-      const y = node.y || 0
+      // 座標を丸めてSSR/クライアント間の精度差を解決
+      const x = roundToFixed(node.x || 0)
+      const y = roundToFixed(node.y || 0)
       const nodeRadius = Math.min(nodeWidth, nodeHeight) / 2
       const labelSpace = 20
       minX = Math.min(minX, x - nodeRadius)
@@ -37,6 +39,12 @@ export function useViewBox({ nodes, nodeWidth, nodeHeight, width, height }: UseV
     const centerX = (minX + maxX) / 2
     const centerY = (minY + maxY) / 2
 
-    return `${centerX - viewWidth / 2} ${centerY - viewHeight / 2} ${viewWidth} ${viewHeight}`
+    // viewBox値も精度を統一
+    const roundedCenterX = roundToFixed(centerX - viewWidth / 2)
+    const roundedCenterY = roundToFixed(centerY - viewHeight / 2)
+    const roundedViewWidth = roundToFixed(viewWidth)
+    const roundedViewHeight = roundToFixed(viewHeight)
+
+    return `${roundedCenterX} ${roundedCenterY} ${roundedViewWidth} ${roundedViewHeight}`
   }, [nodes, nodeWidth, nodeHeight, width, height])
 }
