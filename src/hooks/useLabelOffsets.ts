@@ -37,10 +37,17 @@ const calculateOffsetsForGroup = (nodesInGroup: Array<{ id: string, x: number }>
     const distance = Math.abs(next.x - current.x)
     
     // ノード間距離が小さい場合、ラベルオフセットを適用
-    if (distance < GRAPH_CONSTANTS.node.defaultWidth) {
+    // ノードの実際のサイズ（半径）を考慮して判定
+    const nodeRadius = GRAPH_CONSTANTS.node.defaultWidth / 2 * GRAPH_CONSTANTS.node.radiusRatio
+    const minSafeDistance = nodeRadius * 2 + 20 // ラベルが重ならない最小距離
+    
+    if (distance < minSafeDistance) {
       const offsetAmount = GRAPH_CONSTANTS.node.labelSpacing * 0.75
-      offsets.set(current.id, i % 2 === 0 ? 0 : offsetAmount)
-      offsets.set(next.id, (i + 1) % 2 === 0 ? 0 : offsetAmount)
+      // 交互にオフセットを適用
+      if (!offsets.has(current.id)) {
+        offsets.set(current.id, 0)
+      }
+      offsets.set(next.id, offsetAmount)
     }
   }
   
@@ -48,24 +55,13 @@ const calculateOffsetsForGroup = (nodesInGroup: Array<{ id: string, x: number }>
 }
 
 export function useLabelOffsets({ nodes }: UseLabelOffsetsProps) {
-  // ノード位置のハッシュを計算して、実際の位置変更のみを検出
-  const nodesHash = useMemo(() => {
-    return nodes.map(node => `${node.id}:${Math.round((node.x || 0) / 5) * 5}:${Math.round((node.y || 0) / 5) * 5}`).join('|')
-  }, [nodes])
-
+  // ラベルオフセット機能を一時的に無効化
+  // すべてのノードのラベルオフセットを0に設定
   return useMemo(() => {
-    const nodeGroups = groupNodesByY(nodes)
     const offsets = new Map<string, number>()
-    
-    // 各グループを並列処理可能な形で処理
-    for (const [, nodesInGroup] of nodeGroups) {
-      const groupOffsets = calculateOffsetsForGroup(nodesInGroup)
-      for (const [id, offset] of groupOffsets) {
-        offsets.set(id, offset)
-      }
-    }
-    
+    nodes.forEach(node => {
+      offsets.set(node.id, 0)
+    })
     return offsets
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nodesHash])
+  }, [nodes])
 }

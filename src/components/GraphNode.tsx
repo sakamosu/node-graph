@@ -25,7 +25,7 @@ export const GraphNode = React.memo<GraphNodeProps>(function GraphNode({ node, w
   const radius = isHovered ? baseRadius * 1.3 : baseRadius
   
   // ラベルの基本位置計算
-  const baseLabelY = radius + GRAPH_CONSTANTS.node.padding.vertical * 2
+  const baseLabelY = radius + GRAPH_CONSTANTS.node.padding.vertical
   // labelOffsetを使用して重複を回避
   const adjustedLabelY = baseLabelY + labelOffset
 

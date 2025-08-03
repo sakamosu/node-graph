@@ -46,8 +46,8 @@ export const GraphEdge = React.memo<GraphEdgeProps>(function GraphEdge({
   const endX = roundToFixed(targetX - targetRadius * Math.cos(baseAngle))
   const endY = roundToFixed(targetY - targetRadius * Math.sin(baseAngle))
 
-  // Arrow for direction - fixed size
-  const arrowSize = GRAPH_CONSTANTS.edge.arrowSize
+  // Arrow for direction - dynamic size based on node size
+  const arrowSize = Math.max(6, Math.min(targetRadius * 0.25, 10))
   const arrowAngle = Math.PI / 6
   const arrowX1 = roundToFixed(endX - arrowSize * Math.cos(baseAngle - arrowAngle))
   const arrowY1 = roundToFixed(endY - arrowSize * Math.sin(baseAngle - arrowAngle))
