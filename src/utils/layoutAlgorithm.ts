@@ -52,6 +52,12 @@ interface TriangularPattern {
   }
 }
 
+interface StarPattern {
+  readonly isStar: boolean
+  readonly centerNode?: string
+  readonly peripheralNodes?: ReadonlyArray<string>
+}
+
 const createVector = (x: number, y: number): Vector2D => ({ x, y })
 
 const addVectors = (a: Vector2D, b: Vector2D): Vector2D => ({
@@ -112,6 +118,91 @@ const detectTriangularPattern = (graph: Readonly<Graph>): TriangularPattern => {
   }
   
   return { isTriangular: false }
+}
+
+const detectStarPattern = (graph: Readonly<Graph>): StarPattern => {
+  const { nodes, edges } = graph
+  
+  if (nodes.length < 3) {
+    return { isStar: false }
+  }
+  
+  // 各ノードの次数を計算
+  const nodeConnections = new Map<string, Set<string>>()
+  nodes.forEach(node => nodeConnections.set(node.id, new Set()))
+  
+  edges.forEach(edge => {
+    nodeConnections.get(edge.source)?.add(edge.target)
+    nodeConnections.get(edge.target)?.add(edge.source)
+  })
+  
+  // 中心ノードの候補を探す（高い次数を持つノード）
+  const nodeDegrees = Array.from(nodeConnections.entries()).map(([nodeId, connections]) => ({
+    nodeId,
+    degree: connections.size
+  }))
+  
+  // 次数でソート
+  nodeDegrees.sort((a, b) => b.degree - a.degree)
+  
+  const potentialCenter = nodeDegrees[0]
+  
+  // 星型パターンの条件チェック
+  if (potentialCenter.degree >= nodes.length / 2) {
+    const centerConnections = nodeConnections.get(potentialCenter.nodeId)
+    if (!centerConnections) return { isStar: false }
+    
+    // 周辺ノードがすべて中心ノードとのみ接続されているかチェック
+    const peripheralNodes = Array.from(centerConnections)
+    const isValidStar = peripheralNodes.every(nodeId => {
+      const connections = nodeConnections.get(nodeId)
+      return connections && connections.size === 1 && connections.has(potentialCenter.nodeId)
+    })
+    
+    if (isValidStar) {
+      return {
+        isStar: true,
+        centerNode: potentialCenter.nodeId,
+        peripheralNodes
+      }
+    }
+  }
+  
+  return { isStar: false }
+}
+
+const positionStarPattern = (
+  nodes: ReadonlyArray<Node>,
+  pattern: StarPattern,
+  spacing: { horizontal: number; vertical: number }
+): ReadonlyArray<Node> => {
+  if (!pattern.centerNode || !pattern.peripheralNodes) return nodes
+  
+  const { centerNode, peripheralNodes } = pattern
+  const { horizontal } = spacing
+  
+  // 周辺ノード数に基づいて半径を調整
+  const nodeCount = peripheralNodes.length
+  const baseRadius = Math.max(horizontal * 1.2, nodeCount * 30)
+  
+  return nodes.map(node => {
+    if (node.id === centerNode) {
+      // 中心ノードは原点に配置
+      return { ...node, x: 0, y: 0 }
+    } else if (peripheralNodes.includes(node.id)) {
+      // 周辺ノードを円周上に配置
+      const index = peripheralNodes.indexOf(node.id)
+      const angle = (index / nodeCount) * 2 * Math.PI
+      
+      return {
+        ...node,
+        x: Math.cos(angle) * baseRadius,
+        y: Math.sin(angle) * baseRadius
+      }
+    }
+    
+    return node
+  })
 }
 
 const buildAdjacencyLists = (nodes: ReadonlyArray<Node>, edges: ReadonlyArray<Edge>) => {
@@ -233,24 +324,34 @@ const positionNodesRadially = (
   const positionedNodes = new Map<string, Node>()
   
   Array.from(nodesByLevel.entries()).forEach(([level, nodeIds]) => {
-    const radius = level === 0 ? 0 : centerRadius + level * layerSpacing
-    
-    nodeIds.forEach((nodeId, index) => {
-      const node = nodes.find(n => n.id === nodeId)
-      if (!node) return
-      
-      if (level === 0) {
-        const offset = nodeIds.length > 1 ? (index - (nodeIds.length - 1) / 2) * 30 : 0
+    if (level === 0) {
+      // 中心ノード
+      nodeIds.forEach((nodeId, index) => {
+        const node = nodes.find(n => n.id === nodeId)
+        if (!node) return
+        const offset = nodeIds.length > 1 ? (index - (nodeIds.length - 1) / 2) * 40 : 0
         positionedNodes.set(nodeId, { ...node, x: offset, y: 0 })
-      } else {
-        const angle = (index / nodeIds.length) * 2 * Math.PI
+      })
+    } else {
+      // 周辺ノード - 十分な間隔を確保
+      const nodesCount = nodeIds.length
+      const minRadius = Math.max(centerRadius + level * layerSpacing, nodesCount * 25)
+      
+      nodeIds.forEach((nodeId, index) => {
+        const node = nodes.find(n => n.id === nodeId)
+        if (!node) return
+        
+        // 角度に少しのオフセットを加えて重複を防ぐ
+        const angleOffset = Math.PI / (nodesCount * 2)
+        const angle = (index / nodesCount) * 2 * Math.PI + angleOffset
+        
         positionedNodes.set(nodeId, {
           ...node,
-          x: Math.cos(angle) * radius,
-          y: Math.sin(angle) * radius
+          x: Math.cos(angle) * minRadius,
+          y: Math.sin(angle) * minRadius
         })
-      }
-    })
+      })
+    }
   })
   
   return nodes.map(node => positionedNodes.get(node.id) || node)
@@ -552,6 +653,15 @@ const applyHierarchicalLayout = (
       { ...nodes[0], x: -horizontalSpacing / 2, y: 0 },
       { ...nodes[1], x: horizontalSpacing / 2, y: 0 }
     ]
+  }
+  
+  // 星型パターンの検出と特別処理
+  const starPattern = detectStarPattern(graph)
+  if (starPattern.isStar) {
+    return positionStarPattern(nodes, starPattern, {
+      horizontal: horizontalSpacing,
+      vertical: verticalSpacing
+    })
   }
   
   const triangularPattern = detectTriangularPattern(graph)

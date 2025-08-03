@@ -35,8 +35,8 @@ export function GraphEdge({
   const endX = targetX - radius * Math.cos(baseAngle)
   const endY = targetY - radius * Math.sin(baseAngle)
 
-  // Arrow for direction
-  const arrowSize = 10
+  // Arrow for direction - scale with node size
+  const arrowSize = radius * 0.5
   const arrowAngle = Math.PI / 6
   const arrowX1 = endX - arrowSize * Math.cos(baseAngle - arrowAngle)
   const arrowY1 = endY - arrowSize * Math.sin(baseAngle - arrowAngle)

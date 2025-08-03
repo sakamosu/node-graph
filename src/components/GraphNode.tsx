@@ -5,12 +5,18 @@ interface GraphNodeProps {
   node: Node
   width?: number
   height?: number
+  labelOffset?: number
 }
 
-export function GraphNode({ node, width = 80, height = 40 }: GraphNodeProps) {
+export function GraphNode({ node, width = 80, height = 40, labelOffset = 0 }: GraphNodeProps) {
   const x = node.x || 0
   const y = node.y || 0
   const radius = Math.min(width, height) / 2 * 0.7
+  
+  // ラベルの基本位置計算
+  const baseLabelY = radius + 16
+  // labelOffsetを使用して重複を回避
+  const adjustedLabelY = baseLabelY + labelOffset
 
   return (
     <g transform={`translate(${x}, ${y})`}>
@@ -24,10 +30,10 @@ export function GraphNode({ node, width = 80, height = 40 }: GraphNodeProps) {
       />
       <text
         x={0}
-        y={radius + 16}
+        y={adjustedLabelY}
         textAnchor="middle"
         dominantBaseline="hanging"
-        fontSize={12}
+        fontSize={11}
         fill="#333333"
         fontFamily="Arial, sans-serif"
         textRendering="optimizeLegibility"

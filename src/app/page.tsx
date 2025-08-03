@@ -12,6 +12,11 @@ import {
   microservicesGraph,
   dataPipelineGraph,
   componentGraph,
+  gitWorkflowGraph,
+  socialNetworkGraph,
+  blockchainGraph,
+  layeredArchitectureGraph,
+  typescriptModuleDependencyGraph,
 } from '@/data/sampleGraphs'
 
 export default function Home() {
@@ -244,6 +249,96 @@ export default function Home() {
           color: '#666',
         }}>
           <p>Component hierarchy in a React application</p>
+        </div>
+      </section>
+
+      <section style={{ textAlign: 'center' }}>
+        <h2 style={{ 
+          fontSize: '1.5rem', 
+          marginBottom: '2rem',
+          color: '#333',
+        }}>
+          Git Workflow
+        </h2>
+        <NodeGraph graph={gitWorkflowGraph} compact={false} />
+        <div style={{ 
+          marginTop: '1rem',
+          textAlign: 'center',
+          color: '#666',
+        }}>
+          <p>Git branching strategy with feature and hotfix flows</p>
+        </div>
+      </section>
+
+      <section style={{ textAlign: 'center' }}>
+        <h2 style={{ 
+          fontSize: '1.5rem', 
+          marginBottom: '2rem',
+          color: '#333',
+        }}>
+          Social Network
+        </h2>
+        <NodeGraph graph={socialNetworkGraph} compact={false} />
+        <div style={{ 
+          marginTop: '1rem',
+          textAlign: 'center',
+          color: '#666',
+        }}>
+          <p>Social connections between people with crosslinks</p>
+        </div>
+      </section>
+
+      <section style={{ textAlign: 'center' }}>
+        <h2 style={{ 
+          fontSize: '1.5rem', 
+          marginBottom: '2rem',
+          color: '#333',
+        }}>
+          Blockchain Network
+        </h2>
+        <NodeGraph graph={blockchainGraph} compact={false} />
+        <div style={{ 
+          marginTop: '1rem',
+          textAlign: 'center',
+          color: '#666',
+        }}>
+          <p>Blockchain with validator consensus and transaction pool</p>
+        </div>
+      </section>
+
+      <section style={{ textAlign: 'center' }}>
+        <h2 style={{ 
+          fontSize: '1.5rem', 
+          marginBottom: '2rem',
+          color: '#333',
+        }}>
+          Layered Architecture
+        </h2>
+        <NodeGraph graph={layeredArchitectureGraph} compact={false} />
+        <div style={{ 
+          marginTop: '1rem',
+          textAlign: 'center',
+          color: '#666',
+        }}>
+          <p>Multi-tier application architecture with layer separation</p>
+        </div>
+      </section>
+
+      <section style={{ textAlign: 'center' }}>
+        <h2 style={{ 
+          fontSize: '1.5rem', 
+          marginBottom: '2rem',
+          color: '#333',
+        }}>
+          TypeScript Module Dependencies
+        </h2>
+        <NodeGraph graph={typescriptModuleDependencyGraph} nodeWidth={15} compact={false} />
+        <div style={{ 
+          marginTop: '1rem',
+          textAlign: 'center',
+          color: '#666',
+        }}>
+          <p>TypeScript project module import/export dependencies with 50+ nodes</p>
         </div>
       </section>
     </main>
