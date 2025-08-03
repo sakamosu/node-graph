@@ -218,6 +218,7 @@ export function NodeGraph({ graph, width = 800, height = 600, compact = false, n
             height={nodeHeight}
             labelOffset={labelOffsets.get(node.id) || 0}
             isHighlighted={highlightTargets.nodes.has(node.id)}
+            isHovered={hoveredNodeId === node.id}
             isDimmed={hoveredNodeId !== null && !highlightTargets.nodes.has(node.id)}
             onHover={handleNodeHover}
           />

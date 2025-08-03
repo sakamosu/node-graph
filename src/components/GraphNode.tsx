@@ -7,14 +7,17 @@ interface GraphNodeProps {
   height?: number
   labelOffset?: number
   isHighlighted?: boolean
+  isHovered?: boolean
   isDimmed?: boolean
   onHover?: (nodeId: string | null) => void
 }
 
-export function GraphNode({ node, width = 80, height = 40, labelOffset = 0, isHighlighted = false, isDimmed = false, onHover }: GraphNodeProps) {
+export function GraphNode({ node, width = 80, height = 40, labelOffset = 0, isHighlighted = false, isHovered = false, isDimmed = false, onHover }: GraphNodeProps) {
   const x = node.x || 0
   const y = node.y || 0
-  const radius = Math.min(width, height) / 2 * 0.7
+  const baseRadius = Math.min(width, height) / 2 * 0.7
+  // ホバー中のノードのみサイズを大きくする
+  const radius = isHovered ? baseRadius * 1.3 : baseRadius
   
   // ラベルの基本位置計算
   const baseLabelY = radius + 16
@@ -23,11 +26,18 @@ export function GraphNode({ node, width = 80, height = 40, labelOffset = 0, isHi
 
   // スタイルの決定
   const getNodeStyle = () => {
+    if (isHovered) {
+      return {
+        fill: "#00bcd4",
+        stroke: "none",
+        strokeWidth: 0,
+      }
+    }
     if (isHighlighted) {
       return {
         fill: "#00bcd4",
-        stroke: "#0097a7",
-        strokeWidth: 2,
+        stroke: "none",
+        strokeWidth: 0,
       }
     }
     if (isDimmed) {
@@ -45,7 +55,7 @@ export function GraphNode({ node, width = 80, height = 40, labelOffset = 0, isHi
   }
 
   const getTextStyle = () => {
-    if (isHighlighted) {
+    if (isHovered || isHighlighted) {
       return "#006064"
     }
     if (isDimmed) {
