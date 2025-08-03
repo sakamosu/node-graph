@@ -24,11 +24,14 @@ export function GraphNode({ node, width = 80, height = 40 }: GraphNodeProps) {
       />
       <text
         x={0}
-        y={radius + 12}
+        y={radius + 16}
         textAnchor="middle"
-        dominantBaseline="middle"
-        fontSize={14}
+        dominantBaseline="hanging"
+        fontSize={12}
         fill="#333333"
+        fontFamily="Arial, sans-serif"
+        textRendering="optimizeLegibility"
+        style={{ userSelect: 'none', pointerEvents: 'none' }}
       >
         {node.label}
       </text>

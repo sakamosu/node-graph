@@ -183,7 +183,7 @@ export default function Home() {
         }}>
           Star Topology
         </h2>
-        <NodeGraph graph={starTopologyGraph} />
+        <NodeGraph graph={starTopologyGraph} compact={false} />
         <div style={{ 
           marginTop: '1rem',
           textAlign: 'center',
