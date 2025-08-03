@@ -10,7 +10,7 @@ interface GraphNodeProps {
 export function GraphNode({ node, width = 80, height = 40 }: GraphNodeProps) {
   const x = node.x || 0
   const y = node.y || 0
-  const radius = Math.min(width, height) / 2
+  const radius = Math.min(width, height) / 2 * 0.7
 
   return (
     <g transform={`translate(${x}, ${y})`}>
@@ -18,13 +18,13 @@ export function GraphNode({ node, width = 80, height = 40 }: GraphNodeProps) {
         cx={0}
         cy={0}
         r={radius}
-        fill="#ffffff"
-        stroke="#333333"
-        strokeWidth={2}
+        fill="#808080"
+        stroke="none"
+        strokeWidth={0}
       />
       <text
         x={0}
-        y={0}
+        y={radius + 12}
         textAnchor="middle"
         dominantBaseline="middle"
         fontSize={14}

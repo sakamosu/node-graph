@@ -11,21 +11,25 @@ interface NodeGraphProps {
   width?: number
   height?: number
   compact?: boolean
+  nodeWidth?: number
+  nodeHeight?: number
+  layoutMode?: 'hierarchical' | 'radial' | 'force' | 'auto'
 }
 
-export function NodeGraph({ graph, width = 800, height = 600, compact = false }: NodeGraphProps) {
+export function NodeGraph({ graph, width = 800, height = 600, compact = false, nodeWidth = 80, nodeHeight = 40, layoutMode = 'auto' }: NodeGraphProps) {
   const positionedGraph = useMemo(() => {
     return calculateNodePositions(graph, {
-      nodeWidth: 80,
-      nodeHeight: 40,
+      nodeWidth,
+      nodeHeight,
       horizontalSpacing: compact ? 100 : 150,
       verticalSpacing: compact ? 80 : 100,
       compactMode: compact,
       maxWidth: width * 1.5,
       minNodeSpacing: compact ? 50 : 60,
       enableCollisionAvoidance: false, // Temporarily disabled
+      layoutMode,
     })
-  }, [graph, compact, width])
+  }, [graph, compact, width, nodeWidth, nodeHeight, layoutMode])
 
   const viewBox = useMemo(() => {
     if (positionedGraph.nodes.length === 0) {
@@ -40,10 +44,12 @@ export function NodeGraph({ graph, width = 800, height = 600, compact = false }:
     positionedGraph.nodes.forEach(node => {
       const x = node.x || 0
       const y = node.y || 0
-      minX = Math.min(minX, x - 40)
-      minY = Math.min(minY, y - 20)
-      maxX = Math.max(maxX, x + 40)
-      maxY = Math.max(maxY, y + 20)
+      const nodeRadius = Math.min(nodeWidth, nodeHeight) / 2
+      const labelSpace = 20
+      minX = Math.min(minX, x - nodeRadius)
+      minY = Math.min(minY, y - nodeRadius)
+      maxX = Math.max(maxX, x + nodeRadius)
+      maxY = Math.max(maxY, y + nodeRadius + labelSpace)
     })
 
     const padding = 50
@@ -53,7 +59,7 @@ export function NodeGraph({ graph, width = 800, height = 600, compact = false }:
     const centerY = (minY + maxY) / 2
 
     return `${centerX - viewWidth / 2} ${centerY - viewHeight / 2} ${viewWidth} ${viewHeight}`
-  }, [positionedGraph.nodes])
+  }, [positionedGraph.nodes, nodeWidth, nodeHeight])
 
   const nodeMap = useMemo(() => {
     const map = new Map()
@@ -103,59 +109,6 @@ export function NodeGraph({ graph, width = 800, height = 600, compact = false }:
     return offsets
   }, [positionedGraph.edges, positionedGraph.nodes, nodeMap])
 
-  const edgeDistribution = useMemo(() => {
-    const fromSourceCount = new Map<string, number>()
-    const toTargetCount = new Map<string, number>()
-    const fromSourceIndexes = new Map<string, Map<string, number>>()
-    const toTargetIndexes = new Map<string, Map<string, number>>()
-    
-    // Check if this is a triangular pattern
-    const isTriangular = positionedGraph.nodes.length === 3 && positionedGraph.edges.length === 3
-    
-    if (isTriangular) {
-      // For triangular patterns, don't distribute edges - use center attachment
-      positionedGraph.edges.forEach(edge => {
-        fromSourceCount.set(edge.source, 1)
-        toTargetCount.set(edge.target, 1)
-        
-        if (!fromSourceIndexes.has(edge.source)) {
-          fromSourceIndexes.set(edge.source, new Map())
-        }
-        fromSourceIndexes.get(edge.source)!.set(edge.id, 0)
-        
-        if (!toTargetIndexes.has(edge.target)) {
-          toTargetIndexes.set(edge.target, new Map())
-        }
-        toTargetIndexes.get(edge.target)!.set(edge.id, 0)
-      })
-    } else {
-      // Original distribution logic for non-triangular graphs
-      // Count edges from each source and to each target
-      positionedGraph.edges.forEach(edge => {
-        fromSourceCount.set(edge.source, (fromSourceCount.get(edge.source) || 0) + 1)
-        toTargetCount.set(edge.target, (toTargetCount.get(edge.target) || 0) + 1)
-      })
-      
-      // Assign indexes for each edge
-      positionedGraph.edges.forEach((edge, globalIndex) => {
-        // Index for edges from the same source
-        if (!fromSourceIndexes.has(edge.source)) {
-          fromSourceIndexes.set(edge.source, new Map())
-        }
-        const sourceEdgeIndex = fromSourceIndexes.get(edge.source)!.size
-        fromSourceIndexes.get(edge.source)!.set(edge.id, sourceEdgeIndex)
-        
-        // Index for edges to the same target
-        if (!toTargetIndexes.has(edge.target)) {
-          toTargetIndexes.set(edge.target, new Map())
-        }
-        const targetEdgeIndex = toTargetIndexes.get(edge.target)!.size
-        toTargetIndexes.get(edge.target)!.set(edge.id, targetEdgeIndex)
-      })
-    }
-    
-    return { fromSourceCount, toTargetCount, fromSourceIndexes, toTargetIndexes }
-  }, [positionedGraph.edges, positionedGraph.nodes])
 
   return (
     <svg
@@ -181,8 +134,8 @@ export function NodeGraph({ graph, width = 800, height = 600, compact = false }:
               edge={edge}
               sourceNode={sourceNode}
               targetNode={targetNode}
-              nodeWidth={80}
-              nodeHeight={40}
+              nodeWidth={nodeWidth}
+              nodeHeight={nodeHeight}
               curveOffset={edgeCurveOffsets.get(edge.id) || 0}
             />
           )
@@ -190,7 +143,12 @@ export function NodeGraph({ graph, width = 800, height = 600, compact = false }:
       </g>
       <g>
         {positionedGraph.nodes.map(node => (
-          <GraphNode key={node.id} node={node} />
+          <GraphNode 
+            key={node.id} 
+            node={node} 
+            width={nodeWidth} 
+            height={nodeHeight} 
+          />
         ))}
       </g>
     </svg>

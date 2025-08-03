@@ -28,7 +28,7 @@ export function GraphEdge({
   const baseAngle = Math.atan2(dy, dx)
 
   // Calculate connection points on circle boundary
-  const radius = Math.min(nodeWidth, nodeHeight) / 2
+  const radius = Math.min(nodeWidth, nodeHeight) / 2 * 0.7
   
   const startX = sourceX + radius * Math.cos(baseAngle)
   const startY = sourceY + radius * Math.sin(baseAngle)
@@ -43,31 +43,31 @@ export function GraphEdge({
   const arrowX2 = endX - arrowSize * Math.cos(baseAngle + arrowAngle)
   const arrowY2 = endY - arrowSize * Math.sin(baseAngle + arrowAngle)
 
-  // Cubic bezier path for smooth curves
+  // Cubic bezier with control points extending from start and end points
+  const distance = Math.sqrt(dx * dx + dy * dy)
+  
+  // Control points extend from start and end points in the direction of the connection
+  // This creates the natural curve shown in the image
+  const controlDistance = distance * 0.4 // How far control points extend
+  
   let path: string
   if (curveOffset === 0) {
-    // Even straight lines use subtle bezier for natural feel
-    const distance = Math.sqrt(dx * dx + dy * dy)
-    const controlOffset = distance * 0.25 // 25% of distance for control points
-    
-    const control1X = startX + controlOffset * Math.cos(baseAngle)
-    const control1Y = startY + controlOffset * Math.sin(baseAngle)
-    const control2X = endX - controlOffset * Math.cos(baseAngle)
-    const control2Y = endY - controlOffset * Math.sin(baseAngle)
+    // Standard cubic bezier: control points extend along the connection direction
+    const control1X = startX + controlDistance * Math.cos(baseAngle)
+    const control1Y = startY + controlDistance * Math.sin(baseAngle)
+    const control2X = endX - controlDistance * Math.cos(baseAngle)
+    const control2Y = endY - controlDistance * Math.sin(baseAngle)
     
     path = `M ${startX} ${startY} C ${control1X} ${control1Y} ${control2X} ${control2Y} ${endX} ${endY}`
   } else {
-    // Curved bezier with perpendicular offset
-    const distance = Math.sqrt((endX - startX) ** 2 + (endY - startY) ** 2)
-    const controlOffset = distance * 0.4 // 40% of distance for more pronounced curves
-    
-    // Calculate perpendicular direction for curve offset
+    // For offset curves, add perpendicular offset to control points
     const perpAngle = baseAngle + Math.PI / 2
+    const offsetFactor = curveOffset * 0.3
     
-    const control1X = startX + controlOffset * Math.cos(baseAngle) + curveOffset * Math.cos(perpAngle) * 0.3
-    const control1Y = startY + controlOffset * Math.sin(baseAngle) + curveOffset * Math.sin(perpAngle) * 0.3
-    const control2X = endX - controlOffset * Math.cos(baseAngle) + curveOffset * Math.cos(perpAngle) * 0.3
-    const control2Y = endY - controlOffset * Math.sin(baseAngle) + curveOffset * Math.sin(perpAngle) * 0.3
+    const control1X = startX + controlDistance * Math.cos(baseAngle) + offsetFactor * Math.cos(perpAngle)
+    const control1Y = startY + controlDistance * Math.sin(baseAngle) + offsetFactor * Math.sin(perpAngle)
+    const control2X = endX - controlDistance * Math.cos(baseAngle) + offsetFactor * Math.cos(perpAngle)
+    const control2Y = endY - controlDistance * Math.sin(baseAngle) + offsetFactor * Math.sin(perpAngle)
     
     path = `M ${startX} ${startY} C ${control1X} ${control1Y} ${control2X} ${control2Y} ${endX} ${endY}`
   }
@@ -77,14 +77,13 @@ export function GraphEdge({
       <path
         d={path}
         fill="none"
-        stroke="#666666"
-        strokeWidth={2}
+        stroke="#CCCCCC"
+        strokeWidth={1}
       />
       <polygon
         points={`${endX},${endY} ${arrowX1},${arrowY1} ${arrowX2},${arrowY2}`}
-        fill="#666666"
+        fill="#CCCCCC"
       />
     </g>
   )
 }
-
