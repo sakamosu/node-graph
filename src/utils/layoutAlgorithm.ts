@@ -460,7 +460,7 @@ const applyForceDirectedLayout = (
     initialNodes
   )
   
-  return { ...graph, nodes: finalNodes }
+  return { ...graph, nodes: [...finalNodes] }
 }
 
 const resolveNodeCollisions = (
@@ -848,7 +848,7 @@ export function calculateNodePositions(
       
       if (options.useForceDirected || (nodes.length > 20 && !options.compactMode)) {
         const forceGraph = applyForceDirectedLayout(
-          { nodes: positionedNodes, edges },
+          { nodes: [...positionedNodes], edges },
           {
             forceStrength: options.forceStrength || 0.1,
             iterations: Math.min(100, nodes.length * 3)
