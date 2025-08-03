@@ -7,10 +7,11 @@ interface GraphNodeProps {
   height?: number
   labelOffset?: number
   isHighlighted?: boolean
+  isDimmed?: boolean
   onHover?: (nodeId: string | null) => void
 }
 
-export function GraphNode({ node, width = 80, height = 40, labelOffset = 0, isHighlighted = false, onHover }: GraphNodeProps) {
+export function GraphNode({ node, width = 80, height = 40, labelOffset = 0, isHighlighted = false, isDimmed = false, onHover }: GraphNodeProps) {
   const x = node.x || 0
   const y = node.y || 0
   const radius = Math.min(width, height) / 2 * 0.7
@@ -19,6 +20,41 @@ export function GraphNode({ node, width = 80, height = 40, labelOffset = 0, isHi
   const baseLabelY = radius + 16
   // labelOffsetを使用して重複を回避
   const adjustedLabelY = baseLabelY + labelOffset
+
+  // スタイルの決定
+  const getNodeStyle = () => {
+    if (isHighlighted) {
+      return {
+        fill: "#00bcd4",
+        stroke: "#0097a7",
+        strokeWidth: 2,
+      }
+    }
+    if (isDimmed) {
+      return {
+        fill: "#d0d0d0",
+        stroke: "none",
+        strokeWidth: 0,
+      }
+    }
+    return {
+      fill: "#808080",
+      stroke: "none",
+      strokeWidth: 0,
+    }
+  }
+
+  const getTextStyle = () => {
+    if (isHighlighted) {
+      return "#006064"
+    }
+    if (isDimmed) {
+      return "#999999"
+    }
+    return "#333333"
+  }
+
+  const nodeStyle = getNodeStyle()
 
   return (
     <g 
@@ -31,9 +67,9 @@ export function GraphNode({ node, width = 80, height = 40, labelOffset = 0, isHi
         cx={0}
         cy={0}
         r={radius}
-        fill={isHighlighted ? "#00bcd4" : "#808080"}
-        stroke={isHighlighted ? "#0097a7" : "none"}
-        strokeWidth={isHighlighted ? 2 : 0}
+        fill={nodeStyle.fill}
+        stroke={nodeStyle.stroke}
+        strokeWidth={nodeStyle.strokeWidth}
       />
       <text
         x={0}
@@ -41,7 +77,7 @@ export function GraphNode({ node, width = 80, height = 40, labelOffset = 0, isHi
         textAnchor="middle"
         dominantBaseline="hanging"
         fontSize={11}
-        fill={isHighlighted ? "#006064" : "#333333"}
+        fill={getTextStyle()}
         fontFamily="Arial, sans-serif"
         textRendering="optimizeLegibility"
         style={{ userSelect: 'none', pointerEvents: 'none' }}

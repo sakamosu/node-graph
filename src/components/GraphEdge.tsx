@@ -9,6 +9,7 @@ interface GraphEdgeProps {
   nodeHeight?: number
   curveOffset?: number
   isHighlighted?: boolean
+  isDimmed?: boolean
 }
 
 export function GraphEdge({
@@ -18,6 +19,7 @@ export function GraphEdge({
   nodeHeight = 40,
   curveOffset = 0,
   isHighlighted = false,
+  isDimmed = false,
 }: GraphEdgeProps) {
   const sourceX = sourceNode.x || 0
   const sourceY = sourceNode.y || 0
@@ -73,17 +75,41 @@ export function GraphEdge({
     path = `M ${startX} ${startY} C ${control1X} ${control1Y} ${control2X} ${control2Y} ${endX} ${endY}`
   }
 
+  // スタイルの決定
+  const getEdgeColor = () => {
+    if (isHighlighted) {
+      return "#00bcd4"
+    }
+    if (isDimmed) {
+      return "#e0e0e0"
+    }
+    return "#CCCCCC"
+  }
+
+  const getStrokeWidth = () => {
+    if (isHighlighted) {
+      return 2
+    }
+    if (isDimmed) {
+      return 0.5
+    }
+    return 1
+  }
+
+  const edgeColor = getEdgeColor()
+  const strokeWidth = getStrokeWidth()
+
   return (
     <g>
       <path
         d={path}
         fill="none"
-        stroke={isHighlighted ? "#00bcd4" : "#CCCCCC"}
-        strokeWidth={isHighlighted ? 2 : 1}
+        stroke={edgeColor}
+        strokeWidth={strokeWidth}
       />
       <polygon
         points={`${endX},${endY} ${arrowX1},${arrowY1} ${arrowX2},${arrowY2}`}
-        fill={isHighlighted ? "#00bcd4" : "#CCCCCC"}
+        fill={edgeColor}
       />
     </g>
   )
