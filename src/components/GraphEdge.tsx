@@ -10,6 +10,8 @@ interface GraphEdgeProps {
   curveOffset?: number
   isHighlighted?: boolean
   isDimmed?: boolean
+  sourceNodeHovered?: boolean
+  targetNodeHovered?: boolean
 }
 
 export function GraphEdge({
@@ -20,6 +22,8 @@ export function GraphEdge({
   curveOffset = 0,
   isHighlighted = false,
   isDimmed = false,
+  sourceNodeHovered = false,
+  targetNodeHovered = false,
 }: GraphEdgeProps) {
   const sourceX = sourceNode.x || 0
   const sourceY = sourceNode.y || 0
@@ -31,15 +35,17 @@ export function GraphEdge({
   const baseAngle = Math.atan2(dy, dx)
 
   // Calculate connection points on circle boundary
-  const radius = Math.min(nodeWidth, nodeHeight) / 2 * 0.7
+  const baseRadius = Math.min(nodeWidth, nodeHeight) / 2 * 0.7
+  const sourceRadius = sourceNodeHovered ? baseRadius * 1.3 : baseRadius
+  const targetRadius = targetNodeHovered ? baseRadius * 1.3 : baseRadius
   
-  const startX = sourceX + radius * Math.cos(baseAngle)
-  const startY = sourceY + radius * Math.sin(baseAngle)
-  const endX = targetX - radius * Math.cos(baseAngle)
-  const endY = targetY - radius * Math.sin(baseAngle)
+  const startX = sourceX + sourceRadius * Math.cos(baseAngle)
+  const startY = sourceY + sourceRadius * Math.sin(baseAngle)
+  const endX = targetX - targetRadius * Math.cos(baseAngle)
+  const endY = targetY - targetRadius * Math.sin(baseAngle)
 
-  // Arrow for direction - scale with node size
-  const arrowSize = radius * 0.5
+  // Arrow for direction - scale with target node size
+  const arrowSize = targetRadius * 0.5
   const arrowAngle = Math.PI / 6
   const arrowX1 = endX - arrowSize * Math.cos(baseAngle - arrowAngle)
   const arrowY1 = endY - arrowSize * Math.sin(baseAngle - arrowAngle)
@@ -78,7 +84,7 @@ export function GraphEdge({
   // スタイルの決定
   const getEdgeColor = () => {
     if (isHighlighted) {
-      return "#00bcd4"
+      return "#87CEFA"
     }
     if (isDimmed) {
       return "#e0e0e0"
@@ -106,10 +112,17 @@ export function GraphEdge({
         fill="none"
         stroke={edgeColor}
         strokeWidth={strokeWidth}
+        style={{
+          transition: 'stroke 0.5s ease-out, stroke-width 0.5s ease-out, d 0.5s ease-out',
+        }}
       />
       <polygon
         points={`${endX},${endY} ${arrowX1},${arrowY1} ${arrowX2},${arrowY2}`}
         fill={edgeColor}
+        style={{
+          transition: 'fill 0.5s ease-out',
+          transformOrigin: `${endX}px ${endY}px`,
+        }}
       />
     </g>
   )

@@ -28,14 +28,14 @@ export function GraphNode({ node, width = 80, height = 40, labelOffset = 0, isHi
   const getNodeStyle = () => {
     if (isHovered) {
       return {
-        fill: "#00bcd4",
+        fill: "#87CEFA",
         stroke: "none",
         strokeWidth: 0,
       }
     }
     if (isHighlighted) {
       return {
-        fill: "#00bcd4",
+        fill: "#87CEFA",
         stroke: "none",
         strokeWidth: 0,
       }
@@ -80,6 +80,9 @@ export function GraphNode({ node, width = 80, height = 40, labelOffset = 0, isHi
         fill={nodeStyle.fill}
         stroke={nodeStyle.stroke}
         strokeWidth={nodeStyle.strokeWidth}
+        style={{
+          transition: 'r 0.3s ease-out, fill 0.3s ease-out',
+        }}
       />
       <text
         x={0}
@@ -90,7 +93,11 @@ export function GraphNode({ node, width = 80, height = 40, labelOffset = 0, isHi
         fill={getTextStyle()}
         fontFamily="Arial, sans-serif"
         textRendering="optimizeLegibility"
-        style={{ userSelect: 'none', pointerEvents: 'none' }}
+        style={{ 
+          userSelect: 'none', 
+          pointerEvents: 'none',
+          transition: 'fill 0.3s ease-out',
+        }}
       >
         {node.label}
       </text>
