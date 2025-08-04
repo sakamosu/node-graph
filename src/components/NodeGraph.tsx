@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useMemo } from 'react'
-import { Graph, GraphInteractionHandlers } from '@/types/graph'
+import { Graph, GraphInteractionHandlers, PositionedNode } from '@/types/graph'
 import { GraphNodeList } from './GraphNodeList'
 import { GraphEdgeList } from './GraphEdgeList'
 import { calculateNodePositions } from '@/utils/layoutAlgorithm'
@@ -41,9 +41,9 @@ export function NodeGraph({ graph, width = 800, height = 600, compact = false, n
   }, [graph, compact, width, nodeWidth, nodeHeight, layoutMode])
 
   // カスタムフックを使用してロジックを分離
-  const nodeMap = useNodeMap({ nodes: positionedGraph.nodes })
+  const nodeMap = useNodeMap({ nodes: positionedGraph.nodes as PositionedNode[] })
   const viewBox = useViewBox({ 
-    nodes: positionedGraph.nodes, 
+    nodes: positionedGraph.nodes as PositionedNode[], 
     nodeWidth, 
     nodeHeight, 
     width, 
@@ -51,10 +51,10 @@ export function NodeGraph({ graph, width = 800, height = 600, compact = false, n
   })
   const edgeCurveOffsets = useEdgeCurveOffsets({ 
     edges: positionedGraph.edges, 
-    nodes: positionedGraph.nodes, 
+    nodes: positionedGraph.nodes as PositionedNode[], 
     nodeMap 
   })
-  const labelOffsets = useLabelOffsets({ nodes: positionedGraph.nodes })
+  const labelOffsets = useLabelOffsets({ nodes: positionedGraph.nodes as PositionedNode[] })
   const { hoveredNodeId, highlightTargets, handleNodeHover } = useGraphHighlight({ 
     edges: positionedGraph.edges 
   })
@@ -93,7 +93,7 @@ export function NodeGraph({ graph, width = 800, height = 600, compact = false, n
           hoveredNodeId={hoveredNodeId}
         />
         <GraphNodeList
-          nodes={positionedGraph.nodes}
+          nodes={positionedGraph.nodes as PositionedNode[]}
           nodeWidth={nodeWidth}
           nodeHeight={nodeHeight}
           labelOffsets={labelOffsets}
